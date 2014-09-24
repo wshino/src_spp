@@ -1,33 +1,47 @@
-#include <cstdio>
-#include <algorithm>
-#include <iostream>
-#include <thread>
-#include <boost/thread.hpp>
- 
+#include<cstdio>
+#include<algorithm>
+#include<iostream>
+#include<thread>
+#include<map>
+#include<boost/thread.hpp>
+
 using namespace std;
- 
-void task(int num)
+
+// スレッドで実行する関数
+void func1(const unsigned int low, const unsigned int upper)
 {
-    int start = 1 + (10 * (num - 1));
-    int end = num * 10;
- 
-    for(int i = start; i <= end; i++){
-        cout << i << endl;
-        this_thread::sleep_for(std::chrono::seconds(1));
+    for(unsigned int i = low; i <= upper; ++i )
+    {
+        cout  << __FUNCTION__ << "i=" << i << endl; 
     }
 }
+
  
-int main() {
- 
-    vector<boost::thread *> group;
- 
-    for(int i = 0; i < 3; i++){
-        group.push_back(new boost::thread(task, i + 1));
+int main()
+{
+    map<unsigned int, boost::thread *>thread_map;
+    map<unsigned int, boost::thread *>::iterator it;
+    
+    // mapにスレッドを追加
+    thread_map.insert(make_pair(1,new boost::thread(func1, 10, 15)));
+    thread_map.insert(make_pair(2,new boost::thread(func1, 20, 25)));
+    thread_map.insert(make_pair(3,new boost::thread(func1, 30, 35)));
+    
+    // スレッドの実行待ち
+    for(it = thread_map.begin(); it != thread_map.end(); ++it)
+    {
+        it->second->join();
     }
- 
-    for(int i = 0; i < 3; i++){
-        group[i]->join();
-        delete group[i];
+    
+    // スレッドの削除
+    for(it = thread_map.begin(); it != thread_map.end(); ++it)
+    {
+        delete it->second;
     }
+    
+    // MAPのクリア
+    thread_map.clear();
+    
     return 0;
 }
+
